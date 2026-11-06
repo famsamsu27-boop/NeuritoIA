@@ -52,3 +52,53 @@ Porque la precisión depende de los datos y de las reglas utilizadas para entren
 Conclusión general
 
 Los experimentos permiten comprender cómo funciona una red neuronal artificial y cómo sus resultados cambian al modificar las entradas, las funciones de activación, la cantidad de neuronas y los parámetros de entrenamiento. Neurito demuestra que es posible simular una mascota virtual capaz de seleccionar acciones según sus necesidades, aunque sus decisiones dependen de los datos y las reglas con los que fue entrenada.
+
+Experimentos
+
+1. Sin entrenar (semilla 42): 0 obstáculos esquivados y 200 choques. La probabilidad queda en 0.44 para cualquier distancia, nunca supera 0.5 y la red nunca salta. Esto depende de la inicialización.
+
+2. Entrenar de cien en cien (semilla 42):
+
+Épocas	Pérdida	Precisión	Choques de 200
+100	0.260	91.2%	15
+200	0.231	91.9%	1
+300	0.207	92.3%	0
+1000	0.057	97.8%	0
+2000	0.031	98.8%	0
+
+El comportamiento se vuelve seguro mucho antes de que la precisión termine de subir.
+
+3. Neuronas ocultas (media de 5 semillas, 150 intentos, choques a las 3000 épocas):
+
+Con 3 ocultas: 87% de precisión y 15 choques de media. La semilla 3 se queda en 55% de precisión (sale «saltar» casi siempre) y salta sin parar, chocando 58 veces.
+Con 12 ocultas: 97.7% de precisión y 2 choques de media. La semilla 0 sigue chocando 10 veces.
+Con 24 ocultas: 99.5% de precisión y 0 choques en todas las semillas.
+
+Con pocas neuronas la red no aprende bien la ventana. Con 24 generaliza mejor y es más estable.
+
+4. Tasa de aprendizaje (media de 5 semillas):
+
+Con 0.01: la convergencia es muy lenta. A las 3000 épocas la precisión es 89.7% y hay 75 choques de media; a las 1000 épocas, 150 de 150.
+Con 0.8: 2.0 choques de media a las 3000 épocas.
+Con 1.2: 99.4% de precisión y 0 choques a las 3000 épocas, con pérdida 0.024 frente a 0.09 de la tasa 0.8. A las 100 épocas es más irregular (una semilla chocó 150 veces). En este problema no diverge.
+
+5. Cambiar la ventana de entrenamiento (1500 épocas, 5 semillas):
+
+Ventana (etiqueta / positivos)	Precisión	Choques de 150 (media)
+[7,13] original	97.1%	1.4
+[4,7] (compatible con la física)	96.3%	0
+[10,14] (compatible, pero cerca del límite 14.5)	96.4%	30 (una semilla falló siempre)
+[18,24] demasiado temprana	95.5%	150
+[0,3] demasiado tardía	99.3%	150
+[4,30] ventana ancha	97.7%	150
+Solo cambio la etiqueta a [18,24], positivos sin tocar	98.7%	150
+
+La política solo es compatible con la física si la ventana cae dentro de [4, 14.5]. La ventana [0,3] obtiene la mejor precisión de todas y choca el 100% de las veces.
+
+Pregunta central: ¿por qué clasificar bien y aun así chocar?
+La red aprende la etiqueta, no la física. La etiqueta es una regla escrita por nosotros. Con [0,3] la red aprende esa regla casi a la perfección (99.3%), pero esa regla manda saltar demasiado tarde.
+La precisión pondera todos los errores por igual y el juego no. Los ejemplos de prueba se reparten uniformemente en ttc de 0 a 60. En el juego, cada obstáculo recorre toda esa escala y la red salta en el primer fotograma en que la probabilidad llega a 0.5, sin poder corregir en el aire. Solo importa dónde está el borde superior de la zona «saltar».
+Un error pequeño puede ser fatal. Con la semilla 0 y 12 ocultas, la red manda saltar para ttc entre 0 y 16.2. Los errores entre 0 y 7 son inofensivos, porque la red ya saltó antes. Pero saltar a ttc 16 es fatal con obstáculos lentos, cuyo límite seguro es 14.5. Con precisión de 92% choca el 100% de las veces que aparece un obstáculo lento. Un error de 3 unidades de ttc cuesta pocos puntos de precisión y decide todos esos casos.
+Los datos de prueba no son la distribución del juego. Además, el límite seguro depende de la velocidad y la etiqueta usa un ttc fijo.
+
+Una advertencia sobre los choques: tras un choque, la pista se reinicia con velocidad 5.5, y el generador aleatorio solo avanza al esquivar. Un fallo en esa primera situación se repite una y otra vez, por eso salen los «150 de 150». Esos choques no son 150 casos independientes, sino el mismo caso fallando repetidamente. Para evaluar de forma justa conviene probar la red sobre un barrido de velocidades.
