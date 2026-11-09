@@ -1,0 +1,51 @@
+Neurito y los laberintos:
+
+
+Entradas: el mapa, la casilla de Neurito y la casilla de la comida.
+Salida: cuatro probabilidades (una por dirección); Neurito va hacia la más alta.
+Modo asistido: reglas escritas a mano (no aprendidas) que bloquean muros y penalizan casillas ya visitadas.
+Resultados principales
+Precisión por decisión: cerca de 91%.
+Éxito de la red sola: ~85%. Con asistencia: ~99%.
+Una precisión alta por decisión no equivale a resolver siempre el laberinto, porque un solo error cambia todo el recorrido.
+Más épocas de entrenamiento
+Épocas	Pérdida	Precisión
+100	0.1220	85.2%
+200	0.0366	89.2%
+400	0.0103	90.8%
+Neuronas ocultas (400 épocas)
+Neuronas	Pérdida	Precisión	Éxito asistido
+16	0.0342	87.2%	99.0%
+32	0.0161	89.2%	98.3%
+96	0.0107	91.5%	99.6%
+128	0.0103	90.8%	98.7%
+
+Más neuronas no garantizan más laberintos resueltos.
+
+Tasa de aprendizaje
+
+Con 0.45 la pérdida bajó de forma continua, sin señales de divergencia.
+
+Éxito por mapa (asistido)
+Mapa	Éxito
+Mapa 1	99.5%
+Mapa 2	97.2%
+Mapa 3	99.6%
+
+Los tres mapas se usaron en el entrenamiento; solo cambian las parejas de inicio y meta.
+
+Comparativa de búsqueda
+Algoritmo	Éxito	Pasos promedio	Celdas exploradas
+DFS	100%	10.7	18.6
+BFS	100%	6.1	18.5
+A*	100%	6.1	10.3
+DFS: llega a la meta, pero toma rutas largas.
+BFS: ruta mínima garantizada.
+A*: misma longitud que BFS con menos exploración.
+
+Estos algoritmos ven el mapa completo y son reglas fijas; la red solo imita a BFS.
+
+Limitaciones
+La precisión por decisión no refleja el porcentaje de laberintos resueltos.
+El éxito del modo asistido depende en parte de reglas externas.
+No se ha probado con laberintos totalmente nuevos.
